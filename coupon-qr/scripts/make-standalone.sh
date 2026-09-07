@@ -27,6 +27,33 @@ tar -C "$SOURCE" \
   --exclude=./scripts/make-standalone.sh \
   -cf - . | tar -C "$TARGET" -xf -
 
+# README: التطبيق صار في الجذر، فلا ذكر لمجلد coupon-qr
+python3 - "$TARGET/README.md" <<'PY'
+import sys, pathlib
+path = pathlib.Path(sys.argv[1])
+text = path.read_text()
+swaps = [
+    ("كل الأوامر من داخل مجلد التطبيق (`coupon-qr/` إن كنت في مستودع SkillSpector،\n"
+     "أو جذر المستودع إن استخدمت النسخة المستقلة).\n\n", ""),
+    ("3. **Root Directory**: `coupon-qr` (اتركه فارغاً في النسخة المستقلة) ·\n"
+     "   **Build**: `npm ci --omit=dev` · **Start**: `npm start`.",
+     "3. **Build**: `npm ci --omit=dev` · **Start**: `npm start` (اترك Root Directory فارغاً)."),
+    ("ملف `render.yaml` هنا يفعل ذلك كله دفعة واحدة عبر **Blueprint** بدل الإنشاء\n"
+     "اليدوي — وهو جاهز في جذر النسخة المستقلة.",
+     "ملف `render.yaml` في جذر المستودع يفعل ذلك كله دفعة واحدة عبر **Blueprint**\n"
+     "بدل الإنشاء اليدوي."),
+    ("```\ncoupon-qr/\n", "```\n"),
+]
+for old_text, new_text in swaps:
+    text = text.replace(old_text, new_text)
+
+start = text.find("### مستودع مستقل للموقع")   # هذه النسخة هي المستودع المستقل نفسه
+end = text.find("### قبل الإطلاق")
+if start != -1 and end > start:
+    text = text[:start] + text[end:]
+path.write_text(text)
+PY
+
 # render.yaml: التطبيق صار في الجذر، فلا حاجة إلى rootDir
 python3 - "$TARGET/render.yaml" <<'PY'
 import re, sys, pathlib

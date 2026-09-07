@@ -4,7 +4,9 @@
   "private": true,
   "description": "نظام توليد كوبونات QR والتحقق منها — حملة المشرفون للحج والعمرة",
   "type": "module",
-  "engines": { "node": ">=22.5.0" },
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning server/index.js",
     "dev": "node --watch --disable-warning=ExperimentalWarning server/index.js",

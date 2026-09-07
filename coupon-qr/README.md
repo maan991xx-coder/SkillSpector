@@ -132,19 +132,62 @@ npm test
 ٢٤ اختباراً تغطي التوليد، التوقيع، الكشف، الاستخدام مرة واحدة، انتهاء الصلاحية،
 الإلغاء، الصلاحيات، والتصدير.
 
-## النشر
+## أين أفتح الموقع؟ (النشر)
 
-- شغّل الموقع خلف HTTPS — كاميرا المتصفح لا تعمل بدون https (إلا على localhost).
-- خلف nginx/caddy اضبط `TRUST_PROXY=1` ليُسجَّل عنوان IP الحقيقي في سجل الكشف.
-- خذ نسخة احتياطية دورية من `data/coupons.db` و `data/secret.key`.
-- اجعل اسم النطاق قصيراً قدر الإمكان: كلما طال الرابط زادت كثافة رمز QR.
+الموقع خادم Node، لذلك لا يكفي رفعه على GitHub وحده — GitHub Pages تستضيف
+صفحات ثابتة فقط. اختر واحدة من الطرق التالية، وكلها جاهزة في هذا المجلد.
 
-```dockerfile
-FROM node:22-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
-COPY . .
-EXPOSE 3000
-CMD ["npm", "start"]
+### ١) على جهازك (للتجربة فوراً)
+
+```bash
+cd coupon-qr && npm install && npm start
 ```
+
+ثم <http://localhost:3000>. الكاميرا تعمل على localhost بدون HTTPS.
+
+### ٢) Render — أسهل استضافة سحابية
+
+1. ادفع الكود إلى GitHub (تم بالفعل).
+2. في Render: **New → Web Service** واختر المستودع.
+3. **Root Directory**: `coupon-qr` · **Build**: `npm ci --omit=dev` · **Start**: `npm start`.
+4. من **Environment** أضف: `ADMIN_PASSWORD` و `COUPON_SECRET` (أي نص عشوائي طويل)
+   و `TRUST_PROXY=1`، ثم `PUBLIC_URL` بعنوان الخدمة بعد أول نشر
+   (مثل `https://moshrefoon-coupons.onrender.com`).
+5. أضف **Disk** بمسار `/var/data` واضبط `DB_PATH=/var/data/coupons.db` حتى
+   تبقى الكوبونات بعد إعادة التشغيل. (الخطة المجانية بلا قرص دائم — الكوبونات
+   تُفقد عند إعادة النشر، فاستخدمها للتجربة فقط.)
+
+ملف `render.yaml` هنا يفعل ذلك كله دفعة واحدة إن نقلته إلى جذر المستودع
+واستخدمت **Blueprint** بدل الإنشاء اليدوي.
+
+### ٣) Fly.io — مع قرص دائم
+
+```bash
+cd coupon-qr
+fly launch --copy-config --no-deploy      # يقرأ fly.toml الموجود
+fly volumes create coupon_data --size 1
+fly secrets set ADMIN_PASSWORD=... COUPON_SECRET=...
+fly deploy
+```
+
+عدّل `PUBLIC_URL` في `fly.toml` إلى عنوان تطبيقك قبل توليد أي كوبونات.
+
+### ٤) أي خادم فيه Docker (VPS)
+
+```bash
+cd coupon-qr
+# عدّل PUBLIC_URL و ADMIN_PASSWORD في docker-compose.yml
+docker compose up -d
+```
+
+قاعدة البيانات ومفتاح التوقيع في حجم `coupon-data` الدائم. ضع nginx أو Caddy
+أمامه لشهادة HTTPS.
+
+### قبل الإطلاق
+
+- **HTTPS ضروري** لعمل الكاميرا في المتصفح (إلا على localhost).
+- **اضبط `PUBLIC_URL` قبل توليد أي كوبونات** — العنوان يُطبع داخل رمز QR.
+- **احفظ `COUPON_SECRET`** (أو ملف `data/secret.key`): تغييره يُبطل توقيع كل
+  الكوبونات المطبوعة.
+- خذ نسخة احتياطية دورية من `data/coupons.db`.
+- اجعل اسم النطاق قصيراً: كلما طال الرابط زادت كثافة رمز QR.

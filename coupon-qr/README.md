@@ -26,8 +26,10 @@
 
 ## التشغيل
 
+كل الأوامر من داخل مجلد التطبيق (`coupon-qr/` إن كنت في مستودع SkillSpector،
+أو جذر المستودع إن استخدمت النسخة المستقلة).
+
 ```bash
-cd coupon-qr
 npm install
 cp .env.example .env      # عدّل PUBLIC_URL و ADMIN_PASSWORD
 npm start
@@ -140,7 +142,7 @@ npm test
 ### ١) على جهازك (للتجربة فوراً)
 
 ```bash
-cd coupon-qr && npm install && npm start
+npm install && npm start
 ```
 
 ثم <http://localhost:3000>. الكاميرا تعمل على localhost بدون HTTPS.
@@ -149,7 +151,8 @@ cd coupon-qr && npm install && npm start
 
 1. ادفع الكود إلى GitHub (تم بالفعل).
 2. في Render: **New → Web Service** واختر المستودع.
-3. **Root Directory**: `coupon-qr` · **Build**: `npm ci --omit=dev` · **Start**: `npm start`.
+3. **Root Directory**: `coupon-qr` (اتركه فارغاً في النسخة المستقلة) ·
+   **Build**: `npm ci --omit=dev` · **Start**: `npm start`.
 4. من **Environment** أضف: `ADMIN_PASSWORD` و `COUPON_SECRET` (أي نص عشوائي طويل)
    و `TRUST_PROXY=1`، ثم `PUBLIC_URL` بعنوان الخدمة بعد أول نشر
    (مثل `https://moshrefoon-coupons.onrender.com`).
@@ -157,13 +160,12 @@ cd coupon-qr && npm install && npm start
    تبقى الكوبونات بعد إعادة التشغيل. (الخطة المجانية بلا قرص دائم — الكوبونات
    تُفقد عند إعادة النشر، فاستخدمها للتجربة فقط.)
 
-ملف `render.yaml` هنا يفعل ذلك كله دفعة واحدة إن نقلته إلى جذر المستودع
-واستخدمت **Blueprint** بدل الإنشاء اليدوي.
+ملف `render.yaml` هنا يفعل ذلك كله دفعة واحدة عبر **Blueprint** بدل الإنشاء
+اليدوي — وهو جاهز في جذر النسخة المستقلة.
 
 ### ٣) Fly.io — مع قرص دائم
 
 ```bash
-cd coupon-qr
 fly launch --copy-config --no-deploy      # يقرأ fly.toml الموجود
 fly volumes create coupon_data --size 1
 fly secrets set ADMIN_PASSWORD=... COUPON_SECRET=...
@@ -175,13 +177,27 @@ fly deploy
 ### ٤) أي خادم فيه Docker (VPS)
 
 ```bash
-cd coupon-qr
 # عدّل PUBLIC_URL و ADMIN_PASSWORD في docker-compose.yml
 docker compose up -d
 ```
 
 قاعدة البيانات ومفتاح التوقيع في حجم `coupon-data` الدائم. ضع nginx أو Caddy
 أمامه لشهادة HTTPS.
+
+### مستودع مستقل للموقع
+
+لتسهيل النشر (تكتشفه Render و Railway و Fly تلقائياً بلا ضبط مجلد جذر):
+
+```bash
+bash scripts/make-standalone.sh ~/moshrefoon-coupons
+cd ~/moshrefoon-coupons
+# أنشئ مستودعاً فارغاً باسم moshrefoon-coupons على GitHub ثم:
+git remote add origin https://github.com/<حسابك>/moshrefoon-coupons.git
+git push -u origin main
+```
+
+السكربت ينسخ التطبيق بلا `node_modules` ولا قاعدة البيانات، ويضبط `render.yaml`
+للجذر، ويضيف فحص اختبارات على GitHub Actions، ويعمل أول commit.
 
 ### قبل الإطلاق
 

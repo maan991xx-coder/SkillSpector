@@ -6,7 +6,7 @@
   "use strict";
 
   // ---------- Scene constants ----------
-  const IMAGE_SRC = "assets/bonfire.jpg";
+  const IMAGE_SRC = "https://media.hallah.ai/bbe4c569-7e63-448b-a69a-8e35677a0618/generated/834bf8e6-6419-4e46-99ed-bf8e8684cd5e.png";
   const IMAGE_W = 700;
   const IMAGE_H = 420;
   // Bonfire position inside the image (0..1), so sparks stay pinned to it at any screen size.

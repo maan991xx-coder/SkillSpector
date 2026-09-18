@@ -272,8 +272,12 @@ html, body {
 }
 
 @media (max-width: 480px) {
-  .counters { font-size: .85rem; gap: 10px; }
-  .ghost-btn { display: none; }
+  /* Keep Back and Sound reachable on phones: there is no Esc or M key there. */
+  .hud { gap: 8px; padding: 10px 12px; }
+  .gauge__label { display: none; }
+  .gauge__track { width: clamp(80px, 22vw, 140px); }
+  .counters { font-size: .78rem; gap: 10px; }
+  .ghost-btn { padding: 6px 9px; font-size: .7rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

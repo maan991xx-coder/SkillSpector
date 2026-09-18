@@ -25,6 +25,7 @@
         <span class="counter">Embers <b id="score">0</b></span>
         <span class="counter">Best <b id="best">0</b></span>
       </div>
+      <button class="ghost-btn" id="muteBtn" type="button" aria-label="Toggle sound">Sound: On</button>
       <button class="ghost-btn" id="backBtn" type="button">Back (Esc)</button>
     </div>
 
@@ -36,6 +37,7 @@
       <nav class="menu">
         <button class="menu__item" data-action="play" type="button"><span>Start Game</span></button>
         <button class="menu__item" data-action="howto" type="button"><span>How to Play</span></button>
+        <button class="menu__item" data-action="sound" type="button"><span>Sound: <b id="soundLabel">On</b></span></button>
         <button class="menu__item" data-action="quality" type="button"><span>Quality: <b id="qualityLabel">High</b></span></button>
       </nav>
       <p class="hint">Don't let the fire die.</p>
@@ -48,6 +50,7 @@
         <li>Embers rise from the bonfire &mdash; click them before they fade.</li>
         <li>Every ember feeds the flame, and the flame burns down over time.</li>
         <li>If the flame reaches zero, the run ends.</li>
+        <li>Press <b>M</b> to mute &mdash; the fire, sparks and score are all synthesised live.</li>
       </ul>
       <button class="menu__item" data-action="menu" type="button"><span>Back</span></button>
     </section>
@@ -65,6 +68,7 @@
     <footer class="credits">Click anywhere to strike sparks</footer>
   </div>
 
+  <script src="audio.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

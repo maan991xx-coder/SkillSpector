@@ -13,6 +13,7 @@
   const FIRE = { x: 0.503, y: 0.845 };
   const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const FX = window.DarkEmberAudio;
   const canvas = document.getElementById("scene");
   const ctx = canvas.getContext("2d", { alpha: false });
 
@@ -101,6 +102,7 @@
   }
 
   function burst(x, y, n, power) {
+    FX.spark((x / W) * 2 - 1, power);
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const sp = rnd(40, 200) * power;
@@ -163,6 +165,9 @@
     finalScore: document.getElementById("finalScore"),
     finalTime: document.getElementById("finalTime"),
     qualityLabel: document.getElementById("qualityLabel"),
+    soundLabel: document.getElementById("soundLabel"),
+    muteBtn: document.getElementById("muteBtn"),
+    credits: document.querySelector(".credits"),
     screens: {
       menu: document.getElementById("screenMenu"),
       howto: document.getElementById("screenHowto"),
@@ -171,6 +176,21 @@
   };
   el.best.textContent = state.best;
   el.qualityLabel.textContent = quality === "high" ? "High" : "Lite";
+
+  function syncSound() {
+    const on = FX.isEnabled();
+    el.soundLabel.textContent = on ? "On" : "Off";
+    el.muteBtn.textContent = on ? "Sound: On" : "Sound: Off";
+    el.credits.textContent = on && !FX.isReady()
+      ? "Click anywhere to strike sparks and wake the sound"
+      : "Click anywhere to strike sparks";
+  }
+  syncSound();
+
+  /** Audio can only start from a real gesture, so every entry point calls this. */
+  function wakeAudio() {
+    if (!FX.isReady()) { FX.unlock(); FX.setScene(state.mode); syncSound(); }
+  }
 
   function showScreen(name) {
     for (const [key, node] of Object.entries(el.screens)) {
@@ -194,7 +214,10 @@
 
   document.querySelectorAll(".menu__item").forEach((btn, i) => {
     btn.style.setProperty("--i", i);
+    btn.addEventListener("pointerenter", () => FX.uiHover());
     btn.addEventListener("click", () => {
+      wakeAudio();
+      FX.uiSelect();
       const fx = toX(FIRE.x), fy = toY(FIRE.y);
       burst(fx, fy, Math.round(26 * q()), 1.1);
       const action = btn.dataset.action;
@@ -202,10 +225,18 @@
       else if (action === "menu") toMenu();
       else if (action === "howto") showScreen("howto");
       else if (action === "quality") toggleQuality();
+      else if (action === "sound") toggleSound();
     });
   });
 
   document.getElementById("backBtn").addEventListener("click", toMenu);
+  el.muteBtn.addEventListener("click", toggleSound);
+
+  function toggleSound() {
+    const on = FX.toggle();
+    if (on) { FX.unlock(); FX.setScene(state.mode); }
+    syncSound();
+  }
 
   function toggleQuality() {
     quality = quality === "high" ? "low" : "high";
@@ -224,11 +255,13 @@
     el.score.textContent = "0";
     el.hud.hidden = false;
     showScreen(null);
+    FX.setScene("playing");
     burst(toX(FIRE.x), toY(FIRE.y), Math.round(60 * q()), 1.6);
   }
 
   function toMenu() {
     state.mode = "menu";
+    FX.setScene("menu");
     el.hud.hidden = true;
     orbs.length = 0;
     showScreen("menu");
@@ -236,6 +269,8 @@
 
   function endGame() {
     state.mode = "over";
+    FX.setScene("over");
+    FX.gameOver();
     el.hud.hidden = true;
     orbs.length = 0;
     el.finalScore.textContent = state.score;
@@ -249,8 +284,10 @@
   }
 
   window.addEventListener("keydown", (e) => {
+    wakeAudio();
     if (e.key === "Escape" && state.mode !== "menu") toMenu();
     if (e.key === "Enter" && state.mode !== "playing") startGame();
+    if (e.key === "m" || e.key === "M") toggleSound();
   });
 
   // ---------- Input ----------
@@ -260,6 +297,7 @@
   }
 
   canvas.addEventListener("pointerdown", (e) => {
+    wakeAudio();
     const p = pointerAt(e);
     if (state.mode === "playing") {
       for (let i = orbs.length - 1; i >= 0; i--) {
@@ -269,6 +307,7 @@
           state.score++;
           state.flame = Math.min(100, state.flame + 11);
           el.score.textContent = state.score;
+          FX.collect(state.score);
           burst(o.x, o.y, Math.round(24 * q()), 1);
           return;
         }
@@ -411,6 +450,7 @@
   // ---------- Main loop ----------
   let last = performance.now();
   let emberDebt = 0;
+  let audioSync = 0;
 
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -420,6 +460,9 @@
     // fire flicker: layered waves plus a small random jitter
     const target = 0.72 + Math.sin(now * 0.011) * 0.14 + Math.sin(now * 0.027 + 1.3) * 0.09 + (Math.random() - 0.5) * 0.08;
     state.flicker += (target - state.flicker) * Math.min(1, dt * 12);
+
+    audioSync -= dt;
+    if (audioSync <= 0) { audioSync = 0.12; FX.setFire(state.flicker * flameRatio()); }
 
     // spawn embers at a rate that follows the flame
     emberDebt += dt * 46 * q() * state.flicker * flameRatio();

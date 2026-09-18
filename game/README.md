@@ -9,6 +9,7 @@ game/
 ├── index.html        # screens: title, how-to-play, game over, HUD
 ├── style.css         # ember gradient title, menus, HUD
 ├── game.js           # canvas engine: background, firelight, particles, gameplay
+├── audio.js          # Web Audio engine: fire, sparks, ambient score
 └── assets/bonfire.jpg
 ```
 
@@ -37,12 +38,33 @@ Append `#play` to the URL to jump straight into a run.
 - **Flicker** is layered sine waves plus a small random jitter, smoothed toward a target
   each frame — it drives the halo, the flame core and the ember spawn rate together.
 
+## Sound
+
+Every sound is synthesised at runtime with the Web Audio API &mdash; there are no
+audio files to download and nothing to license.
+
+- **Fire** &mdash; looping brown noise through a lowpass that two slow LFOs keep
+  breathing, with an airy bandpass layer on top. Random resonant pops are the crackle;
+  they come faster and louder while the flame is strong.
+- **Sparks** &mdash; a short noise burst through a bandpass sweeping upward, panned to
+  where you struck it on screen. Rapid bursts are rate-limited so they never stack into mush.
+- **Score** &mdash; a sub drone under a slow D-minor pad (Dm &rarr; B&flat; &rarr; Gm &rarr; A),
+  with sparse FM bell notes drawn from a pentatonic set, all fed through a convolution
+  reverb built from synthesised noise. Collecting an ember rings the next step of that
+  scale, so a good run plays a melody.
+- As the flame dies a heartbeat creeps in underneath, and the fire's volume and
+  brightness follow the gauge.
+
+Browsers only allow audio after a real interaction, so the engine builds itself on your
+first click or keypress. Toggle it from the menu, from the HUD, or with **M**; the choice
+is remembered in `localStorage`.
+
 ## The game
 
 Embers rise from the fire; click them before they fade. Each one feeds the flame, which
 burns down on its own — at zero the run ends. Best score is kept in `localStorage`.
 
-Controls: click/tap to collect, `Enter` to start, `Esc` back to the menu.
+Controls: click/tap to collect, `Enter` to start, `Esc` back to the menu, `M` to mute.
 The **Quality** toggle halves the particle budget and drops the fog layer; it is picked
 automatically for `prefers-reduced-motion`.
 

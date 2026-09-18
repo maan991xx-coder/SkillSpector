@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Dark Ember</title>
+<meta name="description" content="A game front-end built on a single image: living fire, flying sparks and drifting ash." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%94%A5%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <div class="ui" id="ui">
+    <!-- In-game HUD -->
+    <div class="hud" id="hud" hidden>
+      <div class="gauge">
+        <span class="gauge__label">Flame</span>
+        <div class="gauge__track"><div class="gauge__fill" id="flameFill"></div></div>
+      </div>
+      <div class="counters">
+        <span class="counter">Embers <b id="score">0</b></span>
+        <span class="counter">Best <b id="best">0</b></span>
+      </div>
+      <button class="ghost-btn" id="backBtn" type="button">Back (Esc)</button>
+    </div>
+
+    <!-- Title screen -->
+    <section class="screen screen--menu is-active" id="screenMenu">
+      <div class="crest" aria-hidden="true"></div>
+      <h1 class="title" id="title">DARK EMBER</h1>
+      <p class="subtitle">The Last Flame</p>
+      <nav class="menu">
+        <button class="menu__item" data-action="play" type="button"><span>Start Game</span></button>
+        <button class="menu__item" data-action="howto" type="button"><span>How to Play</span></button>
+        <button class="menu__item" data-action="quality" type="button"><span>Quality: <b id="qualityLabel">High</b></span></button>
+      </nav>
+      <p class="hint">Don't let the fire die.</p>
+    </section>
+
+    <!-- How to play -->
+    <section class="screen screen--panel" id="screenHowto">
+      <h2 class="panel-title">How to Play</h2>
+      <ul class="rules">
+        <li>Embers rise from the bonfire &mdash; click them before they fade.</li>
+        <li>Every ember feeds the flame, and the flame burns down over time.</li>
+        <li>If the flame reaches zero, the run ends.</li>
+      </ul>
+      <button class="menu__item" data-action="menu" type="button"><span>Back</span></button>
+    </section>
+
+    <!-- Game over -->
+    <section class="screen screen--panel" id="screenOver">
+      <h2 class="panel-title panel-title--dead">The Fire Went Out</h2>
+      <p class="result">You gathered <b id="finalScore">0</b> embers in <b id="finalTime">0</b> seconds</p>
+      <div class="menu menu--row">
+        <button class="menu__item" data-action="play" type="button"><span>Play Again</span></button>
+        <button class="menu__item" data-action="menu" type="button"><span>Menu</span></button>
+      </div>
+    </section>
+
+    <footer class="credits">Click anywhere to strike sparks</footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
